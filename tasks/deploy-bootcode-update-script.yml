@@ -1,0 +1,8 @@
+# tasks file for base-system
+- name: ensure the bootcode update script exists
+  ansible.builtin.template:
+    src: update-bootblock.sh.j2
+    dest: /root/update-bootblock.sh
+    owner: root
+    group: wheel
+    mode: "0700"

@@ -1,0 +1,35 @@
+---
+- name: check to see if sudo file(s) exist (RedHat)
+  register: base_system_sudo_file_exists
+  loop:
+    "{{ base_system_user_accounts }}"
+  when: item['sudo_user'] == true
+  ansible.builtin.stat:
+    path: "/etc/sudoers.d/{{ item['user_name'] }}"
+    get_attributes: true
+
+- name: ensure file is created for sudo-enabled user accounts (RedHat)
+  no_log: true
+  loop:
+    "{{ base_system_user_accounts }}"
+  loop_control:
+    index_var: idx
+  when: >
+    item['sudo_user'] == true and
+    base_system_sudo_file_exists['results'][idx]['stat']['exists'] == false
+  ansible.builtin.copy:
+    content: ""
+    dest: "/etc/sudoers.d/{{ item['user_name'] }}"
+    mode: "0600"
+    owner: root
+    group: root
+
+- name: ensure sudo is configured for sudo-enabled user accounts (RedHat)
+  no_log: true
+  loop:
+    "{{ base_system_user_accounts }}"
+  when: item['sudo_user'] == true
+  ansible.builtin.lineinfile:
+    path: "/etc/sudoers.d/{{ item['user_name'] }}"
+    line: "{{ item['user_name'] }} ALL=(ALL) ALL"
+    validate: visudo -cf %s

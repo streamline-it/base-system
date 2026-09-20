@@ -1,0 +1,15 @@
+---
+- name: install packages - dnf
+  when: >
+    ansible_facts['distribution_major_version'] == "7" or
+    ansible_facts['distribution_major_version'] == "8" or 
+    ansible_facts['distribution_major_version'] == "9"
+  ansible.builtin.dnf:
+    name: "{{ base_system_pkg_manifest }}"
+    state: latest
+
+- name: install packages - yum
+  when: ansible_facts['distribution_major_version'] == "6"
+  ansible.builtin.yum:
+    name: "{{ base_system_pkg_manifest }}"
+    state: latest

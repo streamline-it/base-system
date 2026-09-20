@@ -1,0 +1,10 @@
+---
+# tasks for base-system
+
+- name: ensure credentials file exists
+  ansible.builtin.template:
+    src: smb_creds.txt.j2
+    dest: /root/smb_creds.txt
+    owner: root
+    group: root
+    mode: '0600'

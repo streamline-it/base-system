@@ -1,0 +1,13 @@
+---
+- name: notify user this task is no longer being used
+  ansible.builtin.debug:
+    msg: "No longer supporting samba mounting."
+
+- name: ensure credentials file exists
+  when: false
+  ansible.builtin.template:
+    src: nsmbrc.j2
+    dest: /root/.nsmbrc
+    owner: root
+    group: wheel
+    mode: '0600'

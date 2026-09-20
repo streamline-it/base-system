@@ -1,0 +1,79 @@
+---
+# defaults file for base_system
+
+# disabled this, don't think it's needed
+# remove after testing
+#smb_mountuser: rich
+
+# user account to use to mount the share on the host
+base_system_smb_mountuser : 
+
+# disabled, the following variable isn't referenced anywhere 
+# in this role.  Should be removed after testing
+#smb_host_ipv4_address: 
+
+# If this is false, only the users in
+# base_system_mandatory_user_accounts will be onboarded
+base_system_onboard_all_users: true
+
+base_system_mountpoints:
+  - path:
+    owner:
+    group:
+    mode:
+
+base_system_mounts:
+  - src: 
+    mount_point: 
+    fstype: 
+    boot: true
+    dump: '0'
+    opts:                              
+    state: mounted
+
+base_system_user_accounts:
+  - user_name:
+    password:
+    groups:
+    uid:
+    sudo_user: 
+    shell: 
+
+# works with new_pc_onboard_all_users.  If that variable is = false
+# then only the users in base_system_mandatory_user_accounts will be onboarded
+base_system_mandatory_user_accounts:
+  - user_name:
+    password:
+    groups:
+    uid:
+    sudo_user: 
+    shell: 
+
+base_system_user_groups:
+  - group_name: 
+    group_gid: 
+
+# variable for rhel-system-roles.sshd
+
+sshd:
+  PermitRootLogin: false
+  PasswordAuthentication: false
+  PubkeyAuthenticiation: true
+
+base_system_svcs:
+  - sshd
+
+base_system_pkg_manifest:
+  - 
+
+# The following variables are used in a jinja2 template
+# to create a shell script to update the bootcode
+# The purpose of this is to simply drop the script under the /root directory.
+
+# boot device name (BIOS)
+base_system_bios_device:
+# index of the boot device index (BIOS)
+base_system_bios_device_index:
+# boot device name (UEFI)
+base_system_uefi_device:
+

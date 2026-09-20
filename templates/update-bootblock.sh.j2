@@ -1,0 +1,91 @@
+#!/usr/bin/env sh
+#*************************************************************************
+#
+# Purpose: This will update the host's boot block.  This should be done
+#          after major release upgrades.  It will cover both legacy
+#	   BIOS and UEFI hosts
+#
+#
+#*************************************************************************
+update_bios_method(){
+	#*****************************************************************
+	# 
+	# udate_bios_method
+	#
+	# Purpose: Update the boot block for legacy BIOS MBR hosts
+	#
+	#*****************************************************************
+
+	# boot device containing the MBR
+	bios_device="$1"
+	# partition containing the MBR
+	bios_index="$2"
+
+	gpart bootcode -b /boot/pmbr -p /boot/gptzfsboot -i "$bios_index" /dev/"$bios_device"
+
+	if [ $? -eq 0 ]; then
+		echo "Legacy BIOS boot block update completed."
+	else
+		echo "Something went wrong." >&2
+		exit 1
+	fi
+
+}
+update_uefi_method(){
+	#*****************************************************************
+	#
+	# update_uefi_method
+	#
+	# Purpose: Update the boot block on UEFI hosts
+	#
+	#*****************************************************************
+
+	# partition containing the boot UEFI filesystem
+	uefi_device="$1"
+
+	# check to see if the parition is already mounted
+        df -h | grep /boot/efi
+        boot_loader_mounted="$?"
+
+        if [ "$boot_loader_mounted" -eq 1 ]; then
+                # partition wasn't mounted, mount it
+                mount -t msdosfs /dev/"$uefi_device" /boot/efi
+                mount_ok="$?"
+        else
+                mount_ok=0
+        fi
+	
+	if [ "$mount_ok" -eq 0 ]; then
+		cp /boot/loader.efi /boot/efi/efi/boot/BOOTX64.efi	
+		cp /boot/loader.efi /boot/efi/efi/freebsd/loader.efi
+                if [ "$boot_loader_mounted" -eq 1 ]; then
+                        # boot loader wasn't mounted; umount it
+		        umount /boot/efi
+                fi 
+
+		echo "Boot block update to UEFI completed."
+	else
+		echo "Problem mounting UEFI partition.  Quitting out" >&2	
+		exit 1
+	fi
+}
+#*************************************************************************
+#
+# Start of script
+#
+#*************************************************************************
+
+# check for boot method
+boot_method=$(sysctl machdep.bootmethod | awk -F ':' '{ print $2 }' | tr -d " " )
+
+# dending on the boot method upgrade the boot block
+
+if [ "$boot_method" = "BIOS" ]; then
+	# if BIOS call function to update
+	update_bios_method "{{ base_system_bios_device }}" "{{ base_system_bios_device_index }}"
+fi
+
+if [ "$boot_method" = "UEFI" ]; then
+	# if UEFI call function to update
+	update_uefi_method "{{ base_system_uefi_device }}"
+fi

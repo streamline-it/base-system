@@ -1,0 +1,5 @@
+---
+- name: install packages - pkgng
+  ansible.builtin.pkgng:
+    name: "{{ base_system_pkg_manifest }}"
+    state: present

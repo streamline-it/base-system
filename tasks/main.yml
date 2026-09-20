@@ -1,0 +1,62 @@
+---
+# tasks file for base-system 
+- name: ensure ansible variables have been defined
+  when: ansible_os_family is not defined
+  ansible.builtin.setup:
+
+- name: call task to make sure key variables are defined
+  ansible.builtin.include_tasks: asserts.yml
+
+- name: call tasks to ensure needed packages are installed - OS dependent
+  ansible.builtin.include_tasks: "{{ ansible_os_family }}_install_pkgs.yml"
+
+- name: call tasks to ensure needed groups have been created
+  ansible.builtin.include_tasks: create_groups.yml
+
+- name: call tasks to ensure users are created
+  ansible.builtin.include_tasks: create_users.yml
+
+- name: ensure mountpoints are created
+  when: base_system_mountpoints[0]['path']
+  loop:
+    "{{ base_system_mountpoints }}"
+  ansible.builtin.file:
+    path: "{{ item['path'] }}"
+    owner: "{{ item['owner'] }}"
+    group: "{{ item['group'] }}"
+    mode: "{{ item['mode'] }}"
+    state: directory
+
+- name: call task to ensure samba credentials exists
+  ansible.builtin.include_tasks: "{{ ansible_os_family }}_add_samba_creds.yml"
+
+- name: ensure mountpoints are mounted
+  when: base_system_mounts[0]['src']
+  loop:
+    "{{ base_system_mounts }}"
+  ansible.posix.mount:
+    src: "{{ item['src'] }}"
+    path: "{{ item['mount_point'] }}"
+    fstype: "{{ item['fstype'] }}"
+    boot: "{{ item['boot'] }}"
+    dump: "{{ item['dump'] }}"
+    opts: "{{ item['opts'] }}"
+    state: "{{ item['state'] }}"
+
+- name: ensure needed services are started/enabled
+  loop:
+    "{{ base_system_svcs }}"
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+
+- name: call tasks to ensure sudo packages are installed
+  ansible.builtin.include_tasks: "{{ ansible_os_family }}_install_sudo.yml"
+
+- name: call tasks to setup user sudo usage
+  ansible.builtin.include_tasks: "{{ ansible_os_family }}_setup_sudo.yml"
+
+- name: call tasks ensure the update bootcode script exists
+  when:  ansible_os_family  == "FreeBSD"
+  ansible.builtin.include_tasks: "deploy-bootcode-update-script.yml"

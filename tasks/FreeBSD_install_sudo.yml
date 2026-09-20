@@ -1,0 +1,7 @@
+---
+# tasks for base-system
+
+- name: ensure sudo package is installed 
+  ansible.builtin.pkgng:
+    name: sudo
+    state: present

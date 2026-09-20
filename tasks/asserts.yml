@@ -1,0 +1,37 @@
+---
+- name: ensure needed variables are defined
+  ansible.builtin.assert:
+    that:
+      - base_system_smb_mountuser is defined
+      - base_system_user_accounts is truthy
+      - base_system_user_groups is defined
+      - base_system_user_groups is truthy
+      - base_system_mountpoints is defined
+      - base_system_mountpoints is truthy
+      - base_system_mounts is defined
+      - base_system_mounts is truthy
+      - base_system_onboard_all_users is defined 
+      - base_system_onboard_all_users == true or base_system_onboard_all_users == false
+    fail_msg: >
+      "Make sure to define the following variable(s)
+      (base_system_user_accounts, base_system_user_groups)."
+
+- name: make sure FreeBSD specific variables are defined
+  when: ansible_os_family == "FreeBSD"
+  ansible.builtin.assert:
+    that:
+      - base_system_bios_device is defined
+      - base_system_bios_device is truthy
+      - base_system_bios_device_index is defined
+      - base_system_bios_device_index is truthy
+      - base_system_uefi_device is defined
+      - base_system_uefi_device is truthy
+    fail_msg: "Ensure these varialbes are defined/values set"
+
+- name: make sure these variables are defined and have values are set
+  when: base_system_onboard_all_users == false
+  ansible.builtin.assert:
+    that: 
+      - base_system_mandatory_user_accounts is defined
+      - base_system_mandatory_user_accounts is truthy 
+    fail_msg: "Make sure all values are defined"

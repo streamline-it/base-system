@@ -1,0 +1,30 @@
+---
+# tasks file for base-system 
+
+- name: call tasks to ensure users are created (uid specified)
+  when: base_system_onboard_all_users == true
+  no_log: true
+  loop:
+    "{{ base_system_user_accounts }}"
+  ansible.builtin.user:
+    name: "{{ item['user_name'] }}"
+    password: "{{ item['password'] | password_hash('sha512', 'mysecretsalt') }}"
+    uid: "{{ item['uid'] }}"
+    groups: "{{ item['groups'] }}"
+    shell: "{{ item['shell'] }}"
+    update_password: on_create
+    state: present
+
+- name: call tasks to ensure only mandatory users are created (uid specified)
+  when: base_system_onboard_all_users == false
+  no_log: true
+  loop:
+    "{{ base_system_mandatory_user_accounts }}"
+  ansible.builtin.user:
+    name: "{{ item['user_name'] }}"
+    password: "{{ item['password'] | password_hash('sha512', 'mysecretsalt') }}"
+    uid: "{{ item['uid'] }}"
+    groups: "{{ item['groups'] }}"
+    shell: "{{ item['shell'] }}"
+    update_password: on_create
+    state: present

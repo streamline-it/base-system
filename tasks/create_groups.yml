@@ -1,0 +1,8 @@
+---
+- name: call tasks to ensure needed groups have been created
+  loop:
+    "{{ base_system_user_groups }}"
+  ansible.builtin.group:
+    name: "{{ item['group_name'] }}" 
+    gid: "{{ item['group_gid'] }}"
+    state: present
